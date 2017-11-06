@@ -43,6 +43,12 @@ class Engine extends BaseEngine {
     return Math.acos(numer / denom);
   }
 
+  clear() {
+    if (this.drawPoint) {
+      this.drawPoint.clear();
+    }
+  }
+
   process(delta) {
     var anchorDistance;
     var oppFirstArm;

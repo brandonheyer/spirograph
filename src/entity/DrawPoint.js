@@ -25,11 +25,7 @@ class DrawPoint extends BaseEntity {
       this.splitTime -= delta;
 
       if (this.splitTime < 0) {
-        this.pathElement = this.pathGroup.append('polyline');
-
-        this.pathElement
-          .attr('fill', 'none')
-          .attr('stroke', '#b2b2ff');
+        this.addPolyline();
 
         this.pathString = this.lastPath + ' ';
         this.splitTime = this.startSplitTime;
@@ -49,11 +45,23 @@ class DrawPoint extends BaseEntity {
 
       rx = (nextX * cosR) - (nextY * sinR);
       ry = (nextX * sinR) + (nextY * cosR);
-      this.lastPath = this.xScale(rx + this.center.x) + ',' + this.yScale(ry + this.center.y);
-      this.pathString += this.lastPath + ' ';
 
-      this.pathElement
-        .attr('points', this.pathString)
+      this.nextX = Math.round(this.xScale(rx + this.center.x));
+      this.nextY = Math.round(this.yScale(ry + this.center.y));
+
+      // Avoid drawing duplicate points
+      if (this.nextX !== this.lastX && this.nextY !== this.lastY) {
+        this.lastX = this.nextX;
+        this.lastY = this.nextY;
+
+        this.lastPath = this.lastX + ',' + this.lastY;
+        this.pathString += this.lastPath + ' ';
+
+        this.pathElement
+          .attr('points', this.pathString)
+      } else {
+        console.log('duplicate');
+      }
 
       this.pathGroup
         .attr(
@@ -73,10 +81,6 @@ class DrawPoint extends BaseEntity {
     this.pointElement
       .attr('r', this.xScale(this.radius))
       .attr('fill', '#dd0d0d');
-
-    this.pathElement
-      .attr('fill', 'none')
-      .attr('stroke', '#b2b2ff');
   }
 
   destroy() {
@@ -84,14 +88,33 @@ class DrawPoint extends BaseEntity {
     this.element = undefined;
   }
 
+  /**
+   * Clear all polylines from the drawing
+   */
+  clear() {
+    this.element
+      .selectAll('polyline')
+      .remove();
+
+    this.addPolyline();
+  }
+
+  addPolyline() {
+    this.pathElement = this.pathGroup.append('polyline');
+
+    this.pathElement
+      .attr('fill', 'none')
+      .attr('stroke', '#b2b2ff');
+  }
+
   render(canvas) {
     if (!this.element) {
       this.element = canvas.append('g');
 
       this.pathGroup = this.element.append('g');
-      this.pathElement = this.pathGroup.append('polyline');
-
       this.pointElement = this.element.append('circle');
+
+      this.addPolyline();
 
       this.updateStyles();
     }

@@ -83,7 +83,9 @@ class Anchor extends BaseEntity {
             this.offset = offset;
           }, this))
           .on('end', _.bind(function() {
-            this.engine.paused = false;
+            if (!this.engine.stopped) {
+              this.engine.paused = false;
+            }
           }, this))
       );
 
@@ -100,7 +102,9 @@ class Anchor extends BaseEntity {
             this.anchorPos.y = this.pos.y + (this.offset * Math.sin(this.rotation * Math.PI / 180));
           }, this))
           .on('end', _.bind(function() {
-            this.engine.paused = false;
+            if (!this.engine.stopped) {
+              this.engine.paused = false;
+            }
           }, this))
       );
 

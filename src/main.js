@@ -9,6 +9,10 @@ import DrawPoint from './entity/DrawPoint';
 var w = $(document).width();
 var h = $(document).height();
 
+var buttonStop;
+var buttonStart;
+var buttonClear;
+
 var engine = new Engine(
   '.sp-canvas',
   w, h,
@@ -45,4 +49,28 @@ engine.addDrawEntity(new DrawPoint({
 }));
 
 engine.fps = $('.sp-fps');
+
 engine.start();
+engine.paused = true;
+
+buttonStop = $('.sp-button-stop').click(() => {
+  buttonStart.attr('disabled', false);
+  buttonClear.attr('disabled', false);
+
+  buttonStop.attr('disabled', 'disabled');
+
+  engine.paused = engine.stopped = true;
+});
+
+buttonStart = $('.sp-button-start').click(() => {
+  buttonStop.attr('disabled', false);
+
+  buttonStart.attr('disabled', 'disabled');
+  buttonClear.attr('disabled', 'disabled');
+
+  engine.paused = engine.stopped = false;
+});
+
+buttonClear = $('.sp-button-clear').click(() => {
+  engine.clear();
+});

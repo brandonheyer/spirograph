@@ -37,12 +37,24 @@
         display: inline-block;
         float: right;
       }
+
+      .sp-controls {
+        position: fixed;
+        bottom: 0;
+        margin: 0 auto;
+      }
     </style>
   </head>
   <body>
     <svg class="sp-canvas" width="800" height="800"> </svg>
 
     <div class="sp-fps"> </div>
+
+    <div class="sp-controls">
+      <button class="sp-button sp-button-stop" disabled="disabled">Stop</button>
+      <button class="sp-button sp-button-start">Start</button>
+      <button class="sp-button sp-button-clear">Clear</button>
+    </div>
 
     <script src="js/main.js"> </script>
   </body>
