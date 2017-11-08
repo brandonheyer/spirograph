@@ -61,6 +61,7 @@ class Engine extends BaseEngine {
     var sinR;
     var x3;
     var x1, y1, x2, y2;
+    var x2s, y2s;
     var x2r, y2r;
     var drawX, drawY;
     var ninetyDegrees = Math.PI / 2;
@@ -72,19 +73,22 @@ class Engine extends BaseEngine {
     this.fps.text(this.average);
 
     if (this.paused) {
-      x2 = this.drawPoint.pos.x;
-      y2 = this.drawPoint.pos.y;
+      if (!_.isNaN(this.drawPoint.pos.x)) {
+        x2 = this.drawPoint.pos.x;
+      }
+
+      if (!_.isNaN(this.drawPoint.pos.y)) {
+        y2 = this.drawPoint.pos.y;
+      }
     } else {
-      anchorDistance = this.anchors[1].anchorPos.minus(this.anchors[0].anchorPos).magnitude();
-
-      oppSecondArm = this.calculateAngle(this.secondArm, this.firstArm, anchorDistance);
-
       x1 = this.anchors[0].anchorPos.x;
       y1 = this.anchors[0].anchorPos.y;
       x2 = this.anchors[1].anchorPos.x;
       y2 = this.anchors[1].anchorPos.y;
 
-      var x2s, y2s;
+      anchorDistance = this.anchors[1].anchorPos.minus(this.anchors[0].anchorPos).magnitude();
+
+      oppSecondArm = this.calculateAngle(this.secondArm, this.firstArm, anchorDistance);
 
       x2s = y1 - y2;
       y2s = x2 - x1;
@@ -111,11 +115,11 @@ class Engine extends BaseEngine {
       x2 = x2s + x1;
       y2 = y2s + y1;
 
-      if (!_.isNaN(x2r)) {
+      if (!_.isNaN(x2)) {
         this.drawPoint.pos.x = x2;
       }
 
-      if (!_.isNaN(y2r)) {
+      if (!_.isNaN(y2)) {
         this.drawPoint.pos.y = y2;
       }
     }

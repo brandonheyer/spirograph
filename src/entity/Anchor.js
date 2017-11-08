@@ -19,10 +19,10 @@ class Anchor extends BaseEntity {
   update(delta) {
     if (!this.engine.paused) {
       this.rotation = this.rotation + (this.rotationSpeed * (delta / 1000)) % 360;
-
-      this.anchorPos.x = this.pos.x + (this.offset * Math.cos(this.rotation * Math.PI / 180));
-      this.anchorPos.y = this.pos.y + (this.offset * Math.sin(this.rotation * Math.PI / 180));
     }
+
+    this.anchorPos.x = this.pos.x + (this.offset * Math.cos(this.rotation * Math.PI / 180));
+    this.anchorPos.y = this.pos.y + (this.offset * Math.sin(this.rotation * Math.PI / 180));
 
     this.centerElement
       .attr('cx', this.xScale(this.pos.x))

@@ -22,59 +22,63 @@ class DrawPoint extends BaseEntity {
     var ry;
 
     if (!this.engine.paused) {
-      this.splitTime -= delta;
-
-      if (this.splitTime < 0) {
-        this.addPolyline();
-
-        this.pathString = this.lastPath + ' ';
-        this.splitTime = this.startSplitTime;
-      }
-
-      this.pointElement
-        .attr('cx', this.xScale(this.pos.x))
-        .attr('cy', this.yScale(this.pos.y));
-
       this.rotation = this.rotation + (this.speed * delta / 1000) % 360;
-
-      cosR = Math.cos(this.rotation * Math.PI / 180);
-      sinR = Math.sin(this.rotation * Math.PI / 180);
-
-      nextX = this.pos.x - (this.center.x);
-      nextY = this.pos.y - (this.center.y);
-
-      rx = (nextX * cosR) - (nextY * sinR);
-      ry = (nextX * sinR) + (nextY * cosR);
-
-      this.nextX = Math.round(this.xScale(rx + this.center.x));
-      this.nextY = Math.round(this.yScale(ry + this.center.y));
-
-      // Avoid drawing duplicate points
-      if (this.nextX !== this.lastX && this.nextY !== this.lastY) {
-        this.lastX = this.nextX;
-        this.lastY = this.nextY;
-
-        this.lastPath = this.lastX + ',' + this.lastY;
-        this.pathString += this.lastPath + ' ';
-
-        this.pathElement
-          .attr('points', this.pathString)
-      } else {
-        console.log('duplicate');
-      }
-
-      this.pathGroup
-        .attr(
-          'transform',
-          'translate(' + this.xScale(this.center.x) + ', ' + this.yScale(this.center.y) + ')' +
-          'rotate(' + (-1 * this.rotation) + ')'  +
-          'translate(' + (-1 * this.xScale(this.center.x)) + ', ' + (-1 * this.yScale(this.center.y)) + ')'
-        );
     }
+
+    this.splitTime -= delta;
+
+    if (this.splitTime < 0) {
+      this.addPolyline();
+
+      this.pathString = this.lastPath + ' ';
+      this.splitTime = this.startSplitTime;
+    }
+
+    this.pointElement
+      .attr('cx', this.xScale(this.pos.x))
+      .attr('cy', this.yScale(this.pos.y));
+
+
+
+    cosR = Math.cos(this.rotation * Math.PI / 180);
+    sinR = Math.sin(this.rotation * Math.PI / 180);
+
+    nextX = this.pos.x - (this.center.x);
+    nextY = this.pos.y - (this.center.y);
+
+    rx = (nextX * cosR) - (nextY * sinR);
+    ry = (nextX * sinR) + (nextY * cosR);
+
+    this.nextX = Math.round(this.xScale(rx + this.center.x) * 10) / 10;
+    this.nextY = Math.round(this.yScale(ry + this.center.y) * 10) / 10;
+
+    // Avoid drawing duplicate points
+    if (this.nextX !== this.lastX && this.nextY !== this.lastY) {
+      this.lastX = this.nextX;
+      this.lastY = this.nextY;
+
+      this.lastPath = this.lastX + ',' + this.lastY;
+      this.pathString += this.lastPath + ' ';
+
+      this.pathElement
+        .attr('points', this.pathString)
+    } else {
+      console.log('duplicate');
+    }
+
+    this.pathGroup
+      .attr(
+        'transform',
+        'translate(' + this.xScale(this.center.x) + ', ' + this.yScale(this.center.y) + ')' +
+        'rotate(' + (-1 * this.rotation) + ')'  +
+        'translate(' + (-1 * this.xScale(this.center.x)) + ', ' + (-1 * this.yScale(this.center.y)) + ')'
+      );
   }
 
   update(delta) {
-    this.update = this.nextUpdate;
+    if (!this.engine.paused) {
+      this.update = this.nextUpdate;
+    }
   }
 
   updateStyles() {
@@ -92,9 +96,11 @@ class DrawPoint extends BaseEntity {
    * Clear all polylines from the drawing
    */
   clear() {
-    this.element
-      .selectAll('polyline')
-      .remove();
+    this.pathElement.remove();
+    this.pathElement = undefined;
+    this.pathString = '';
+
+    this.pathGroup.selectAll('polyline').remove();
 
     this.addPolyline();
   }
@@ -110,12 +116,10 @@ class DrawPoint extends BaseEntity {
   render(canvas) {
     if (!this.element) {
       this.element = canvas.append('g');
-
       this.pathGroup = this.element.append('g');
       this.pointElement = this.element.append('circle');
 
       this.addPolyline();
-
       this.updateStyles();
     }
   }
