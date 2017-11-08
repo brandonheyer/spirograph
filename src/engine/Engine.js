@@ -8,12 +8,6 @@ class Engine extends BaseEngine {
   constructor(svgClass, pixelX, pixelY, worldX, worldY, options) {
     super(svgClass, pixelX, pixelY, worldX, worldY, options);
 
-    this.frames = 0;
-    this.currFrames = 0;
-    this.frameTimes = [];
-    this.frameTimes.length = 100;
-    this.frameTimes.fill(0);
-
     this.anchors = [];
     this.drawPoint = undefined;
     this.firstArm = options.firstArm || 2400;
@@ -65,12 +59,6 @@ class Engine extends BaseEngine {
     var x2r, y2r;
     var drawX, drawY;
     var ninetyDegrees = Math.PI / 2;
-
-    this.frameTimes[this.frames % 100] = delta;
-    this.frames++;
-    this.average = Math.round(1 / (_.mean(this.frameTimes) / 1000), 2);
-
-    this.fps.text(this.average);
 
     if (this.paused) {
       if (!_.isNaN(this.drawPoint.pos.x)) {

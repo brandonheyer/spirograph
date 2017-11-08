@@ -19,7 +19,9 @@ var engine = new Engine(
   8000, (8000 * h) / w,
   {
     firstArm: 2200,
-    secondArm: 2900
+    secondArm: 2900,
+    trackFPS: true,
+    displayFPS: $('.sp-fps')
   }
 );
 
@@ -47,8 +49,6 @@ engine.addDrawEntity(new DrawPoint({
   startingPosition: new Point(6000, engine.yScale.domain()[1] * .8),
   speed: 1
 }));
-
-engine.fps = $('.sp-fps');
 
 engine.start();
 engine.paused = true;
