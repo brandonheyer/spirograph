@@ -55,15 +55,13 @@ _.defaults(settings, {
 });
 
 _.each(settings, function(v, k) {
-  var div = $('<div class="control"><label for=' + k + '">' + k + ':</label></div>');
+  var div = $('<div class="sp-control"><label class="sp-control-label" for=' + k + '">' + k + ':</label></div>');
 
   settings[k] = parseInt(v, 10);
-
-  controlInputs[k] = $('<input type="text" id="' + k + '" value="' + v + '" />').appendTo(div);
+  controlInputs[k] = $('<input class="sp-control-input" type="text" id="' + k + '" value="' + v + '" />').appendTo(div);
 
   controls.append(div);
 });
-
 
 firstAnchor = new Anchor({
   xScale: engine.xScale,
@@ -129,16 +127,18 @@ $('.sp-inputs').on('change', () => {
     location.hash = queryString.stringify(settings);
   });
 
-  engine.firstArm = settings.firstArm;
-  engine.secondArm = settings.secondArm;
+  console.log(settings);
 
-  firstAnchor.pos.x = settings.x1;
-  firstAnchor.pos.x = settings.y1;
+  engine.firstArm = parseInt(settings.firstArm, 10);
+  engine.secondArm = parseInt(settings.secondArm, 10);
 
-  secondAnchor.pos.x = settings.x2;
-  secondAnchor.pos.y = settings.y2;
+  firstAnchor.pos.x = parseInt(settings.x1);
+  firstAnchor.pos.y = parseInt(settings.y1);
+  firstAnchor.rotationSpeed = parseInt(settings.speed1);
 
-
+  secondAnchor.pos.x = parseInt(settings.x2, 10);
+  secondAnchor.pos.y = parseInt(settings.y2, 10);
+  secondAnchor.rotationSpeed = parseInt(settings.speed2);
 
   settings.rotationSpeed = drawPoint;
 });

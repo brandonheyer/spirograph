@@ -3,7 +3,7 @@ module.exports = function (grunt) {
     browserify: {
       dist: {
         src: [
-          './src/**/*'
+          './src/**/*.js'
         ],
         dest: './dist/js/main.js',
         options: {
@@ -24,16 +24,33 @@ module.exports = function (grunt) {
       }
     },
 
+    sass: {
+        options: {
+            sourceMap: true
+        },
+        dist: {
+            files: {
+                'dist/styles.css': 'src/scss/main.scss'
+            }
+        }
+    },
+
     watch: {
       dist: {
-        files: ['src/**/*'],
+        files: ['src/**/*.js'],
         tasks: ['browserify:dist'],
+      },
+
+      sass: {
+        files: ['src/scss/**/*.scss'],
+        tasks: ['sass']
       }
     }
   };
 
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-sass');
 
   grunt.initConfig(config);
 
