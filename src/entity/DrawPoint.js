@@ -1,5 +1,7 @@
 import {BaseEntity, Point, Vector} from '2d-engine';
 
+const ACCURACY = 2.5;
+
 class DrawPoint extends BaseEntity {
   constructor(options) {
     super(options);
@@ -38,8 +40,6 @@ class DrawPoint extends BaseEntity {
       .attr('cx', this.xScale(this.pos.x))
       .attr('cy', this.yScale(this.pos.y));
 
-
-
     cosR = Math.cos(this.rotation * Math.PI / 180);
     sinR = Math.sin(this.rotation * Math.PI / 180);
 
@@ -49,21 +49,27 @@ class DrawPoint extends BaseEntity {
     rx = (nextX * cosR) - (nextY * sinR);
     ry = (nextX * sinR) + (nextY * cosR);
 
-    this.nextX = Math.round(this.xScale(rx + this.center.x) * 10) / 10;
-    this.nextY = Math.round(this.yScale(ry + this.center.y) * 10) / 10;
+    this.nextX = Math.round(this.xScale(rx + this.center.x) * ACCURACY) / ACCURACY;
+    this.nextY = Math.round(this.yScale(ry + this.center.y) * ACCURACY) / ACCURACY;
 
     // Avoid drawing duplicate points
     if (this.nextX !== this.lastX && this.nextY !== this.lastY) {
       this.lastX = this.nextX;
       this.lastY = this.nextY;
 
-      this.lastPath = this.lastX + ',' + this.lastY;
-      this.pathString += this.lastPath + ' ';
+      // this.lastPath = this.lastX + ',' + this.lastY;
+      // this.pathString += this.lastPath + ' ';
+      //
+      // this.pathElement
+      //   .attr('points', this.pathString)
+
+      this.lastPath = this.lastX + ' ' + this.lastY;
+      this.pathString += this.lastPath + ' L ';
 
       this.pathElement
-        .attr('points', this.pathString)
+        .attr('d', 'M ' + this.pathString.slice(0, -2));
     } else {
-      console.log('duplicate');
+      // console.log('duplicate');
     }
 
     this.pathGroup
@@ -100,23 +106,26 @@ class DrawPoint extends BaseEntity {
     this.pathElement = undefined;
     this.pathString = '';
 
-    this.pathGroup.selectAll('polyline').remove();
+    // this.pathGroup.selectAll('polyline').remove();
+    this.pathGroup.selectAll('path').remove();
 
     this.addPolyline();
   }
 
   addPolyline() {
-    this.pathElement = this.pathGroup.append('polyline');
+    // this.pathElement = this.pathGroup.append('polyline');
+    this.pathElement = this.pathGroup.append('path');
 
     this.pathElement
       .attr('fill', 'none')
-      .attr('stroke', '#b2b2ff');
+      .attr('stroke', '#d0eeee');
   }
 
   render(canvas) {
     if (!this.element) {
       this.element = canvas.append('g');
       this.pathGroup = this.element.append('g');
+      // this.pathGroup.attr('filter', 'url(#f3)');
       this.pointElement = this.element.append('circle');
 
       this.addPolyline();

@@ -12,6 +12,7 @@ class Engine extends BaseEngine {
     this.drawPoint = undefined;
     this.firstArm = options.firstArm || 2400;
     this.secondArm = options.secondArm || 2200;
+    this.runTime = 0;
   }
 
   addAnchorEntity(entity) {
@@ -41,6 +42,8 @@ class Engine extends BaseEngine {
     if (this.drawPoint) {
       this.drawPoint.clear();
     }
+
+    this.runTime = 0;
   }
 
   process(delta) {
@@ -69,6 +72,8 @@ class Engine extends BaseEngine {
         y2 = this.drawPoint.pos.y;
       }
     } else {
+      this.runTime += delta;
+
       x1 = this.anchors[0].anchorPos.x;
       y1 = this.anchors[0].anchorPos.y;
       x2 = this.anchors[1].anchorPos.x;
@@ -130,6 +135,7 @@ class Engine extends BaseEngine {
   tick() {
     var newLast = +(new Date());
     var delta = this.delta = newLast - this.last;
+    var rot1, rot2, rot3;
 
     this.last = newLast;
 
@@ -140,6 +146,14 @@ class Engine extends BaseEngine {
     this.exitElements();
 
     this.elements = this.svg.selectAll('g.entity');
+
+    rot1 = this.anchors[0].rotationSpeed * (this.runTime / 1000);
+    rot2 = this.anchors[1].rotationSpeed * (this.runTime / 1000);
+    rot3 = this.drawPoint.speed * (this.runTime / 1000);
+
+    if (360 < Math.min(Math.min(rot1, rot2), rot3)) {
+      this.paused = true;
+    }
 
     this.process(delta);
 
