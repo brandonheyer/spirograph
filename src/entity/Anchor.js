@@ -123,7 +123,7 @@ class Anchor extends BaseEntity {
             var tempVector = this.pos.minus(this.otherAnchor.pos);
             var anchorDistance = tempVector.magnitude();
 
-            armMax -= this.offset this.engine.anchors[0].offset + this.engine.anchors[1].offset;
+            armMax -= this.engine.anchors[0].offset + this.engine.anchors[1].offset;
             // armMin -= this.engine.anchors[0].offset + this.engine.anchors[1].offset;
 
             if (anchorDistance <= armMax && anchorDistance >= armMin) {

@@ -54,6 +54,14 @@ _.defaults(settings, {
   rotationSpeed: 1
 });
 
+function updateQueryString() {
+  _.each(settings, function(v, selector) {
+    console.log($('#' + selector).val());
+    settings[selector] = $('#' + selector).val();
+    location.hash = queryString.stringify(settings);
+  });
+}
+
 function updateSettings() {
   var div;
   _.each(settings, function(v, k) {
@@ -73,8 +81,6 @@ function updateSettings() {
 updateSettings();
 
 function onDragStop() {
-  console.log('dragStop');
-
   settings.x1 = firstAnchor.pos.x;
   settings.y1 = firstAnchor.pos.y;
   settings.offset1 = firstAnchor.offset;
@@ -84,6 +90,7 @@ function onDragStop() {
   settings.offset2 = secondAnchor.offset;
 
   updateSettings();
+  updateQueryString();
 }
 
 firstAnchor = new Anchor({
@@ -152,10 +159,7 @@ buttonClear = $('.sp-button-clear').click(() => {
 });
 
 $('.sp-inputs').on('change', () => {
-  _.each(settings, function(v, selector) {
-    settings[selector] = $('#' + selector).val();
-    location.hash = queryString.stringify(settings);
-  });
+  updateQueryString();
 
   engine.firstArm = parseInt(settings.firstArm, 10);
   engine.secondArm = parseInt(settings.secondArm, 10);
