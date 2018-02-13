@@ -15,7 +15,7 @@ module.exports = function (grunt) {
               'babelify',
               {
                 'presets': [
-                  'es2015'
+                  'env'
                 ]
               }
             ]
@@ -54,6 +54,6 @@ module.exports = function (grunt) {
 
   grunt.initConfig(config);
 
-  grunt.registerTask('default', ['browserify']);
+  grunt.registerTask('default', ['browserify', 'sass']);
   grunt.registerTask('w', ['browserify', 'watch']);
 };

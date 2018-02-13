@@ -25,60 +25,61 @@ class DrawPoint extends BaseEntity {
 
     if (!this.engine.paused) {
       this.rotation = this.rotation + (this.speed * delta / 1000) % 360;
+
+
+      this.splitTime -= delta;
+
+      if (this.splitTime < 0) {
+        this.addPolyline();
+
+        this.pathString = this.lastPath + ' ';
+        this.splitTime = this.startSplitTime;
+      }
+
+      this.pointElement
+        .attr('cx', this.xScale(this.pos.x))
+        .attr('cy', this.yScale(this.pos.y));
+
+      cosR = Math.cos(this.rotation * Math.PI / 180);
+      sinR = Math.sin(this.rotation * Math.PI / 180);
+
+      nextX = this.pos.x - (this.center.x);
+      nextY = this.pos.y - (this.center.y);
+
+      rx = (nextX * cosR) - (nextY * sinR);
+      ry = (nextX * sinR) + (nextY * cosR);
+
+      this.nextX = Math.round(this.xScale(rx + this.center.x) * ACCURACY) / ACCURACY;
+      this.nextY = Math.round(this.yScale(ry + this.center.y) * ACCURACY) / ACCURACY;
+
+      // Avoid drawing duplicate points
+      if (this.nextX !== this.lastX && this.nextY !== this.lastY) {
+        this.lastX = this.nextX;
+        this.lastY = this.nextY;
+
+        // this.lastPath = this.lastX + ',' + this.lastY;
+        // this.pathString += this.lastPath + ' ';
+        //
+        // this.pathElement
+        //   .attr('points', this.pathString)
+
+        this.lastPath = this.lastX + ' ' + this.lastY;
+        this.pathString += this.lastPath + ' L ';
+
+        this.pathElement
+          .attr('d', 'M ' + this.pathString.slice(0, -2));
+      } else {
+        // console.log('duplicate');
+      }
+
+      this.pathGroup
+        .attr(
+          'transform',
+          'translate(' + this.xScale(this.center.x) + ', ' + this.yScale(this.center.y) + ')' +
+          'rotate(' + (-1 * this.rotation) + ')'  +
+          'translate(' + (-1 * this.xScale(this.center.x)) + ', ' + (-1 * this.yScale(this.center.y)) + ')'
+        );
     }
-
-    this.splitTime -= delta;
-
-    if (this.splitTime < 0) {
-      this.addPolyline();
-
-      this.pathString = this.lastPath + ' ';
-      this.splitTime = this.startSplitTime;
-    }
-
-    this.pointElement
-      .attr('cx', this.xScale(this.pos.x))
-      .attr('cy', this.yScale(this.pos.y));
-
-    cosR = Math.cos(this.rotation * Math.PI / 180);
-    sinR = Math.sin(this.rotation * Math.PI / 180);
-
-    nextX = this.pos.x - (this.center.x);
-    nextY = this.pos.y - (this.center.y);
-
-    rx = (nextX * cosR) - (nextY * sinR);
-    ry = (nextX * sinR) + (nextY * cosR);
-
-    this.nextX = Math.round(this.xScale(rx + this.center.x) * ACCURACY) / ACCURACY;
-    this.nextY = Math.round(this.yScale(ry + this.center.y) * ACCURACY) / ACCURACY;
-
-    // Avoid drawing duplicate points
-    if (this.nextX !== this.lastX && this.nextY !== this.lastY) {
-      this.lastX = this.nextX;
-      this.lastY = this.nextY;
-
-      // this.lastPath = this.lastX + ',' + this.lastY;
-      // this.pathString += this.lastPath + ' ';
-      //
-      // this.pathElement
-      //   .attr('points', this.pathString)
-
-      this.lastPath = this.lastX + ' ' + this.lastY;
-      this.pathString += this.lastPath + ' L ';
-
-      this.pathElement
-        .attr('d', 'M ' + this.pathString.slice(0, -2));
-    } else {
-      // console.log('duplicate');
-    }
-
-    this.pathGroup
-      .attr(
-        'transform',
-        'translate(' + this.xScale(this.center.x) + ', ' + this.yScale(this.center.y) + ')' +
-        'rotate(' + (-1 * this.rotation) + ')'  +
-        'translate(' + (-1 * this.xScale(this.center.x)) + ', ' + (-1 * this.yScale(this.center.y)) + ')'
-      );
   }
 
   update(delta) {

@@ -12,6 +12,9 @@ class Anchor extends BaseEntity {
     this.offset = options.offset || 100;
     this.rotationSpeed = options.speed || 20;
     this.rotation = options.rotation || Math.floor(Math.random() * 360);
+    this.startingRotation = this.rotation;
+    this.dragStop = options.dragStop || function() {};
+    this.armLength = options.armLength;
 
     this.anchorPos = new Point(0, 0);
   }
@@ -61,7 +64,12 @@ class Anchor extends BaseEntity {
       this.anchorElement.call(
         d3.drag()
           .on('start', _.bind(function() {
-            this.engine.paused = true;
+            if (this.engine.paused || this.alreadyPaused) {
+              this.alreadyPaused = true;
+            } else {
+              this.alreadyPaused = false;
+              this.engine.paused = true;
+            }
           }, this))
           .on('drag', _.bind(function() {
             var offset;
@@ -83,28 +91,70 @@ class Anchor extends BaseEntity {
             this.offset = offset;
           }, this))
           .on('end', _.bind(function() {
-            if (!this.engine.stopped) {
+            if (!this.engine.stopped && !this.alreadyPaused) {
               this.engine.paused = false;
             }
+
+            this.dragStop();
           }, this))
       );
 
       this.centerElement.call(
         d3.drag()
           .on('start', _.bind(function() {
-            this.engine.paused = true;
+            var newX = this.xScale.invert(d3.event.x);
+            var newY = this.yScale.invert(d3.event.y);
+
+            if (this.engine.paused || this.alreadyPaused) {
+              this.alreadyPaused = true;
+            } else {
+              this.alreadyPaused = false;
+              this.engine.paused = true;
+            }
+
+            this.dragXOffset = newX - this.pos.x;
+            this.dragYOffset = newY - this.pos.y;
           }, this))
           .on('drag', _.bind(function() {
-            this.pos.x = this.xScale.invert(d3.event.x);
-            this.pos.y = this.yScale.invert(d3.event.y);
+            var newX = this.xScale.invert(d3.event.x) - this.dragXOffset;
+            var newY = this.yScale.invert(d3.event.y) - this.dragYOffset;
+            var armMax = this.engine.anchors[0].armLength + this.engine.anchors[1].armLength;
+            var armMin = Math.max(this.engine.anchors[0].armLength, this.engine.anchors[1].armLength) - Math.min(this.engine.anchors[0].armLength, this.engine.anchors[1].armLength);
+            var tempVector = this.pos.minus(this.otherAnchor.pos);
+            var anchorDistance = tempVector.magnitude();
 
-            this.anchorPos.x = this.pos.x + (this.offset * Math.cos(this.rotation * Math.PI / 180));
-            this.anchorPos.y = this.pos.y + (this.offset * Math.sin(this.rotation * Math.PI / 180));
+            armMax -= this.offset this.engine.anchors[0].offset + this.engine.anchors[1].offset;
+            // armMin -= this.engine.anchors[0].offset + this.engine.anchors[1].offset;
+
+            if (anchorDistance <= armMax && anchorDistance >= armMin) {
+              this.pos.x = newX;
+              this.pos.y = newY;
+            } else {
+              var pullDistance = tempVector.times((anchorDistance - armMax) / anchorDistance);
+              this.pos.x -= pullDistance.x;
+              this.pos.y -= pullDistance.y;
+
+              this.anchorPos.x = this.pos.x + (this.offset * Math.cos(this.rotation * Math.PI / 180));
+              this.anchorPos.y = this.pos.y + (this.offset * Math.sin(this.rotation * Math.PI / 180));
+
+              this.centerElement
+                .attr('cx', this.xScale(this.pos.x))
+                .attr('cy', this.yScale(this.pos.y));
+
+              this.anchorElement
+                .attr('cx', this.xScale(this.anchorPos.x))
+                .attr('cy', this.yScale(this.anchorPos.y));
+
+              d3.event.sourceEvent.preventDefault();
+              d3.event.sourceEvent.stopPropagation();
+            }
           }, this))
           .on('end', _.bind(function() {
-            if (!this.engine.stopped) {
+            if (!this.engine.stopped && !this.alreadyPaused) {
               this.engine.paused = false;
             }
+
+            this.dragStop();
           }, this))
       );
 

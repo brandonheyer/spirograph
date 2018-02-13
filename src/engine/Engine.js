@@ -2,9 +2,9 @@ import _ from 'lodash';
 import * as d3 from 'd3';
 import $ from 'jquery';
 
-import {Vector, Engine as BaseEngine} from '2d-engine';
+import {Vector, SVGEngine} from '2d-engine';
 
-class Engine extends BaseEngine {
+class Engine extends SVGEngine {
   constructor(svgClass, pixelX, pixelY, worldX, worldY, options) {
     super(svgClass, pixelX, pixelY, worldX, worldY, options);
 
@@ -63,15 +63,15 @@ class Engine extends BaseEngine {
     var drawX, drawY;
     var ninetyDegrees = Math.PI / 2;
 
-    if (this.paused) {
-      if (!_.isNaN(this.drawPoint.pos.x)) {
-        x2 = this.drawPoint.pos.x;
-      }
-
-      if (!_.isNaN(this.drawPoint.pos.y)) {
-        y2 = this.drawPoint.pos.y;
-      }
-    } else {
+    // if (this.paused) {
+    //   if (!_.isNaN(this.drawPoint.pos.x)) {
+    //     x2 = this.drawPoint.pos.x;
+    //   }
+    //
+    //   if (!_.isNaN(this.drawPoint.pos.y)) {
+    //     y2 = this.drawPoint.pos.y;
+    //   }
+    // } else {
       this.runTime += delta;
 
       x1 = this.anchors[0].anchorPos.x;
@@ -115,7 +115,7 @@ class Engine extends BaseEngine {
       if (!_.isNaN(y2)) {
         this.drawPoint.pos.y = y2;
       }
-    }
+    // }
 
     this.anchors[0].armElement
       .attr('x1', this.xScale(this.anchors[0].anchorPos.x))
@@ -132,10 +132,44 @@ class Engine extends BaseEngine {
     super.process(delta);
   }
 
+  gcd2(a, b) {
+    if (!b)  {
+      return b === 0 ? a : NaN;
+    }
+
+    return this.gcd2(b, a % b);
+  }
+
+  gcd(arr) {
+    var n = 0;
+    var i = 0;
+
+    for (i = 0; i < arr.length; ++i) {
+      n = this.gcd2(arr[i], n);
+    }
+
+    return n;
+  }
+
+  lcm2(a, b) {
+    return a * b / this.gcd2(a, b);
+  }
+
+  lcm(arr) {
+    var n = 1;
+    var i = 0;
+
+    for (i = 0; i < arr.length; ++i) {
+      n = this.lcm2(arr[i], n);
+    }
+
+    return n;
+  }
+
   tick() {
     var newLast = +(new Date());
     var delta = this.delta = newLast - this.last;
-    var rot1, rot2, rot3;
+    var arr1, arr2;
 
     this.last = newLast;
 
@@ -147,15 +181,51 @@ class Engine extends BaseEngine {
 
     this.elements = this.svg.selectAll('g.entity');
 
-    rot1 = this.anchors[0].rotationSpeed * (this.runTime / 1000);
-    rot2 = this.anchors[1].rotationSpeed * (this.runTime / 1000);
-    rot3 = this.drawPoint.speed * (this.runTime / 1000);
+    arr1 = [this.anchors[0].rotationSpeed, this.anchors[1].rotationSpeed, this.drawPoint.speed];
+    arr1 = _.sortBy(arr1);
 
-    if (360 < Math.min(Math.min(rot1, rot2), rot3)) {
-      this.paused = true;
-    }
+    arr2 = [this.anchors[0].rotation - this.anchors[0].startingRotation, this.anchors[1].rotation - this.anchors[1].startingRotation, this.drawPoint.rotation];
+    arr2 = _.sortBy(arr2);
 
     this.process(delta);
+
+    if (this.gcd(arr1) * (this.runTime / 1000) >= 360 && arr2[0] >= 360) {
+      if (!this.pausing) {
+        if (arr2[0] % 360 > 180) {
+          this.zero = false;
+        } else {
+          this.zero = true;
+        }
+
+        if (arr2[1] % 360 > 180) {
+          this.one = false;
+        } else {
+          this.one = true;
+        }
+
+        if (arr2[2] % 360 > 180) {
+          this.two = false;
+        } else {
+          this.two = true;
+        }
+
+        this.pausing = true;
+      } else if (this.one && this.two && this.zero) {
+        this.paused = true;
+      } else {
+        if (!this.zero) {
+          this.zero = arr2[0] % 360 < 180;
+        }
+
+        if (!this.one) {
+          this.one = arr2[1] % 360 < 180;
+        }
+
+        if (!this.two) {
+          this.two = arr2[2] % 360 < 180;
+        }
+      }
+    }
 
     this.timeout = setTimeout(this.tick.bind(this), (32 - (1000 / this.average) || 0));
   }

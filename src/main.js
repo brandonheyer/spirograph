@@ -54,14 +54,37 @@ _.defaults(settings, {
   rotationSpeed: 1
 });
 
-_.each(settings, function(v, k) {
-  var div = $('<div class="sp-control"><label class="sp-control-label" for=' + k + '">' + k + ':</label></div>');
+function updateSettings() {
+  var div;
+  _.each(settings, function(v, k) {
+    if (controlInputs[k]) {
+      controlInputs[k].val(v);
+    } else {
+      div = $('<div class="sp-control"><label class="sp-control-label" for=' + k + '">' + k + ':</label></div>');
 
-  settings[k] = parseFloat(v);
-  controlInputs[k] = $('<input class="sp-control-input" type="text" id="' + k + '" value="' + v + '" />').appendTo(div);
+      settings[k] = parseFloat(v);
+      controlInputs[k] = $('<input class="sp-control-input" type="text" id="' + k + '" value="' + v + '" />').appendTo(div);
 
-  controls.append(div);
-});
+      controls.append(div);
+    }
+  });
+}
+
+updateSettings();
+
+function onDragStop() {
+  console.log('dragStop');
+
+  settings.x1 = firstAnchor.pos.x;
+  settings.y1 = firstAnchor.pos.y;
+  settings.offset1 = firstAnchor.offset;
+
+  settings.x2 = secondAnchor.pos.x;
+  settings.y2 = secondAnchor.pos.y;
+  settings.offset2 = secondAnchor.offset;
+
+  updateSettings();
+}
 
 firstAnchor = new Anchor({
   xScale: engine.xScale,
@@ -69,7 +92,9 @@ firstAnchor = new Anchor({
   startingPosition: new Point(settings.x1, settings.y1),
   radius: settings.radius1,
   offset: settings.offset1,
-  speed: settings.speed1
+  speed: settings.speed1,
+  armLength: settings.firstArm,
+  dragStop: onDragStop
 });
 engine.addAnchorEntity(firstAnchor);
 
@@ -79,9 +104,14 @@ secondAnchor = new Anchor({
   startingPosition: new Point(settings.x2, settings.y2),
   radius: settings.radius2,
   offset: settings.offset2,
-  speed: settings.speed2
+  armLength: settings.secondArm,
+  speed: settings.speed2,
+  dragStop: onDragStop
 });
 engine.addAnchorEntity(secondAnchor);
+
+firstAnchor.otherAnchor = secondAnchor;
+secondAnchor.otherAnchor = firstAnchor;
 
 drawPoint = new DrawPoint({
   xScale: engine.xScale,
